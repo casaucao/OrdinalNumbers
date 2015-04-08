@@ -5,7 +5,6 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "com.casaucao.ordinalnumbers"
         minSdkVersion 7
         targetSdkVersion 22
         versionCode 1
@@ -21,4 +20,62 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+version = "0.1.0"
+group = "com.casaucao"
+
+configurations {
+    archives {
+        extendsFrom configurations.default
+    }
+}
+
+signing {
+    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    configuration = configurations.archives
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        repository(url: sonatypeRepo) {
+            authentication(userName: sonatypeUsername,
+                    password: sonatypePassword)
+        }
+
+        pom.project {
+            name 'Ordinal Numbers'
+            packaging 'aar'
+            description 'An Android library to manage ordinal numbers'
+            url 'https://github.com/casaucao/OrdinalNumbers'
+
+            scm {
+                url 'scm:git@github.com:casaucao/OrdinalNumbers.git'
+                connection 'scm:git@github.com:casaucao/OrdinalNumbers.git'
+                developerConnection 'scm:git@github.com:casaucao/OrdinalNumbers.git'
+            }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'casaucao'
+                    name 'Eric Zurera Casaucao'
+                    email 'casaucao@gmail.com'
+                }
+            }
+        }
+    }
 }
